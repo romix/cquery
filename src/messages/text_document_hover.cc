@@ -6,7 +6,9 @@ namespace {
 /// Trim the spaces and special comment markup at the beginning of the string.
 static std::string ltrim(std::string s) {
   auto it = s.begin();
-  for (; it != s.end() && (isspace(*it) || *it == '*' || *it == '/'); ++it) {
+  for (; it != s.end() &&
+         (isspace(*it) || *it == '*' || *it == '/' || *it == '!');
+       ++it) {
   }
 
   if (it == s.end())
