@@ -115,6 +115,22 @@ static void getDocAndHover(const optional<std::string>& hover,
   result.second = hover ? *hover : detailed_name;
 }
 
+static const optional<std::string>& getCommentOrOverriddenComment(
+    QueryDatabase* db,
+    QueryFunc& func) {
+  if (func.def->comments && !func.def->comments->empty())
+    return func.def->comments;
+  for (const auto& base : func.def->base) {
+    QueryFunc& base_func = db->funcs[base.id];
+    if (!base_func.def)
+      continue;
+    if (base_func.def->comments && !base_func.def->comments->empty()) {
+      return base_func.def->comments;
+    }
+  }
+  return func.def->comments;
+}
+
 std::pair<std::string, std::string> GetHoverForSymbol(QueryDatabase* db,
                                                       const SymbolIdx& symbol) {
   std::pair<std::string, std::string> docAndHover;
@@ -129,7 +145,7 @@ std::pair<std::string, std::string> GetHoverForSymbol(QueryDatabase* db,
     case SymbolKind::Func: {
       QueryFunc& func = db->funcs[symbol.idx];
       if (func.def)
-        getDocAndHover(func.def->hover, func.def->comments,
+        getDocAndHover(func.def->hover, getCommentOrOverriddenComment(db, func),
                        func.def->detailed_name, docAndHover);
       break;
     }
